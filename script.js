@@ -27,7 +27,7 @@ function onMapClick(e) {
 
 map.on("click", onMapClick);
 
-async function postData(url = "", data = {}) {
+async function login(url = "", data = {}) {
   // Default options are marked with *
   const response = await fetch(url, {
     method: "POST", // *GET, POST, PUT, DELETE, etc.
@@ -36,8 +36,7 @@ async function postData(url = "", data = {}) {
     credentials: "same-origin", // include, *same-origin, omit
     headers: {
       "Content-Type": "application/json",
-      Authorization: "Bearer Token",
-      // 'Content-Type': 'application/x-www-form-urlencoded',
+      // "Content-Type": "application/x-www-form-urlencoded",
     },
     redirect: "follow", // manual, *follow, error
     referrerPolicy: "no-referrer", // no-referrer, *client
@@ -46,17 +45,13 @@ async function postData(url = "", data = {}) {
   return await response; // parses JSON response into native JavaScript objects
 }
 
-postData("https://test.agweb.cloud/ServiceJSON/Login", {
+login("https://test.agweb.cloud/ServiceJSON/Login", {
   UserName: "",
-  password: 999,
+  password: ,
 }).then((data) => {
   console.log(data); // JSON data parsed by `response.json()` call
 });
 
-// fetch("https://test.agweb.cloud/ServiceJSON/EnumSchemas")
-//   .then((response) => {
-//     return response.json();
-//   })
-//   .then((data) => {
-//     console.log(data);
-//   });
+// let response = await fetch("https://test.agweb.cloud/ServiceJSON/EnumSchemas"); // завершается с заголовками ответа
+// let result = await response.json(); // читать тело ответа в формате JSON
+// console.log(result);
