@@ -149,7 +149,7 @@ const getToken = async (url = "", data = {}) => {
   await getData("https://test.agweb.cloud/ServiceJSON/EnumGeoFences", {
     session: `${token}`, // Токен аутентификации который возвращает метод Login
     schemaID: `${enumSchemas}`, // ID схемы, которые возвращаются EnumSchemas
-    parentIDs: "386557e2-badf-4284-a762-f3b1d45ea98f", // string (query) ID корневого элемента иерархии
+    parentIDs: "3e9582ea-5b41-42eb-9ecd-062c674cfadd", // string (query) ID корневого элемента иерархии
     // ПОКА ВЫБЕРУ ТОЛЬКО ЧАСТЬ ДАННЫХ ЧТОБЫ НЕ УТОНУТЬ В НИХ
   }).then((data) => {
     const geoFencesList = JSON.parse(data).Items;
@@ -163,15 +163,54 @@ const getToken = async (url = "", data = {}) => {
       let ul = document.createElement("ul");
       geoFencesList.forEach((elems) => {
         let li = document.createElement("li");
+        li.classList.add("tree__geofences_item");
         li.textContent = `ID: ${elems.ID}`;
         ul.append(li);
       });
       return ul; // возвращаем список
     }
 
-    let devicesUl = renderGeoFencesList(geoFencesList); // получаем список
-    document.getElementById("geofences").append(devicesUl); // добавляем список на страницу в div с id=root
+    let geofencesUl = renderGeoFencesList(geoFencesList); // получаем список
+    document.getElementById("geofences").append(geofencesUl); // добавляем список на страницу в div с id=root
     GEOFENCESTITLE.textContent = "Список геозон";
+
+    let geofences = document.querySelectorAll(".tree__geofences_item");
+    for (let i = 0; i < geofences.length; i++) {
+      geofences[i].addEventListener("click", function () {
+        getData("https://test.agweb.cloud/ServiceJSON/GetGeofences", {
+          session: `${token}`, // Токен аутентификации который возвращает метод Login
+          schemaID: `${enumSchemas}`, // ID схемы, которые возвращаются EnumSchemas
+          IDs: `${geofences[i].textContent}`, // (query) ID геозон через запятую. Если параметр не задан, используются все геозоны схемы.
+        }).then((data) => {
+          const geofencesLatList = JSON.parse(data.slice(41, -2)).Lat;
+          const geofencesLngList = JSON.parse(data.slice(41, -2)).Lng;
+          console.log(geofencesLatList);
+          console.log(geofencesLngList);
+          const coordinates = [];
+          // if ((trackLatList.length = 0)) {
+          //   console.log("no data");
+          //   geofences[i].textContent = "нет данных за текущие UTC сутки";
+          // }
+          for (let index = 0; index < geofencesLatList.length; index++) {
+            let coordinate = [geofencesLatList[index], trackLngList[index]];
+            coordinates.push(coordinate);
+            var circle = L.circle(coordinate, {
+              color: "red",
+              fillColor: "#f03",
+              fillOpacity: 0.5,
+              radius: 5,
+            }).addTo(map);
+          }
+          console.log(coordinates);
+          var marker = L.marker(coordinates[0])
+            .addTo(map)
+            .bindPopup(geofences[i].textContent)
+            .openPopup();
+          // var polygon = L.polygon(coordinates).addTo(map);
+          console.log(geofences[i].textContent);
+        });
+      });
+    }
   });
 
   // .then(
