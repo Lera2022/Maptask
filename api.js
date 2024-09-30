@@ -2,15 +2,13 @@ const VEHICLETITLE = document.querySelector(".trees__vehicle_title");
 const GEOFENCESTITLE = document.querySelector(".trees__geofences_title");
 const VEHICLEITEMS = document.querySelectorAll(".tree__vehicle_item");
 
-var map = L.map("map").setView([58.967006, 67.652982], 5);
+var map = L.map("map").setView([55.182103, 61.397747], 11);
 
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
   attribution:
     '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
-
-// var marker = L.marker([55.20167281540249, 61.53177591334961]).addTo(map);
 
 function zeroPad(value) {
   return value.toString().padStart(2, "0");
@@ -25,8 +23,8 @@ const gmdhm = `${date.getFullYear()}${zeroPad(date.getMonth() + 1)}${zeroPad(
 )}-${zeroPad(date.getHours())}${zeroPad(date.getMinutes())}`;
 const UTCOffset = date.getTimezoneOffset();
 
-// console.log(gmd);
-// console.log(gmdhm);
+// console.log("начало текущих суток: " + gmd);
+// console.log("текущее время: " + gmdhm);
 // console.log(UTCOffset);
 
 let requestResult = "";
@@ -77,74 +75,125 @@ const getToken = async (url = "", data = {}) => {
     schemaID: `${enumSchemas}`, //ID схемы, которые возвращаются EnumSchemas
     // parentIDs: "2fbde714-b3fe-4c74-874e-9017359a8ce2", // string (query) ID корневого элемента иерархии
   }).then((data) => {
+    const devicesGroupsList = JSON.parse(data).Groups;
+    // console.log(devicesGroupsList);
+    let div = document.createElement("div");
+    div.id = "vehiclegroup";
+    document.body.append(div); // добавляем div на страницу
+
     const devicesList = JSON.parse(data).Items;
     // console.log(devicesList);
 
-    let div = document.createElement("div");
-    div.id = "vehicle";
-    document.body.append(div); // добавляем div на страницу
+    function renderDevicesGroupsList(devicesGroupsList) {
+      let div = document.createElement("div");
+      div.classList.add("tree__vehiclegroup");
+
+      for (let index = 0; index < devicesGroupsList.length; index++) {
+        const result = devicesList.filter((person) =>
+          person.ParentID.includes(devicesGroupsList[index].ID)
+        );
+        // console.log(result);
+        let inputcheck = document.createElement("input");
+        inputcheck.id = `${devicesGroupsList[index].ID}`;
+        inputcheck.type = "checkbox";
+        inputcheck.classList.add("tree__vehiclegroup_item-check");
+        div.append(inputcheck);
+        let label = document.createElement("label");
+        label.classList.add("tree__vehiclegroup_item");
+        label.textContent = `${devicesGroupsList[index].Name}`;
+        div.append(label);
+        let div2 = document.createElement("div");
+        div.append(div2);
+        let devicesUl = renderDevicesList(result); // получаем список
+        div.append(devicesUl); // добавляем список на страницу в div с id
+      }
+      return div; // возвращаем список
+    }
+
+    let devicesGroupsUl = renderDevicesGroupsList(devicesGroupsList); // получаем список
+    document.getElementById("vehicle").append(devicesGroupsUl); // добавляем список на страницу в div с id
+    VEHICLETITLE.textContent = "Транспортные средства";
 
     function renderDevicesList(devicesList) {
-      let ul = document.createElement("ul");
+      let div = document.createElement("div");
+      div.classList.add("tree__vehicle");
       devicesList.forEach((elems) => {
-        let li = document.createElement("li");
-        li.classList.add("tree__vehicle_item");
-        li.textContent = `${elems.ID}`;
-        ul.append(li);
+        let inputcheck = document.createElement("input");
+        inputcheck.id = `${elems.ID}`;
+        inputcheck.type = "checkbox";
+        inputcheck.classList.add("tree__vehicle_item-check");
+        div.append(inputcheck);
+        let label = document.createElement("label");
+        label.classList.add("tree__vehicle_item");
+        label.textContent = `${elems.Name}`;
+        div.append(label);
+        let div2 = document.createElement("div");
+        div.append(div2);
       });
-      return ul; // возвращаем список
-    }
-
-    let devicesUl = renderDevicesList(devicesList); // получаем список
-    document.getElementById("vehicle").append(devicesUl); // добавляем список на страницу в div с id=root
-
-    VEHICLETITLE.textContent = "Список транспортных средств";
-
-    let vehicles = document.querySelectorAll(".tree__vehicle_item");
-    for (let i = 0; i < vehicles.length; i++) {
-      vehicles[i].addEventListener("click", function () {
-        try {
-          getData("https://test.agweb.cloud/ServiceJSON/GetTrack", {
-            session: `${token}`, // Токен аутентификации который возвращает метод Login
-            schemaID: `${enumSchemas}`, // ID схемы, которые возвращаются EnumSchemas
-            IDs: `${vehicles[i].textContent}`, //Список идентификаторов ТС (их можно получить с помощью EnumDevices – поле ID в классе RGroupItem)
-            SD: `${gmd}`, //Начало временного периода. Время с учетом UTCOffset заданном в методе «Login» в формате yyyyMMdd или yyyyMMdd-HHmm
-            ED: `${gmdhm}`, //Конец временного периода. Время с учетом UTCOffset заданном в методе «Login» в формате yyyyMMdd или yyyyMMdd-HHmm
-            // tripSplitterIndex, //integer($int32) (query) Идентификатор разбиения на рейсы (по умолчанию 0), -1 если не разбивать на рейсы
-          }).then((data) => {
-            const trackLatList = JSON.parse(data.slice(41, -2)).Lat;
-            const trackLngList = JSON.parse(data.slice(41, -2)).Lng;
-            console.log(trackLatList);
-            console.log(trackLngList);
-            const coordinates = [];
-            // if ((trackLatList.length = 0)) {
-            //   console.log("no data");
-            //   vehicles[i].textContent = "нет данных за текущие UTC сутки";
-            // }
-            for (let index = 0; index < trackLatList.length; index++) {
-              let coordinate = [trackLatList[index], trackLngList[index]];
-              coordinates.push(coordinate);
-              var circle = L.circle(coordinate, {
-                color: "red",
-                fillColor: "#f03",
-                fillOpacity: 0.5,
-                radius: 5,
-              }).addTo(map);
-            }
-            console.log(coordinates);
-            var marker = L.marker(coordinates[0])
-              .addTo(map)
-              .bindPopup(vehicles[i].textContent)
-              .openPopup();
-            // var polygon = L.polygon(coordinates).addTo(map);
-            console.log(vehicles[i].textContent);
-          });
-        } catch (error) {
-          console.log("no data");
-        }
-      });
+      return div; // возвращаем список
     }
   });
+
+  let vehicles = document.querySelectorAll(".tree__vehicle_item");
+  let vehiclesCheck = document.querySelectorAll(".tree__vehicle_item-check");
+  for (let i = 0; i < vehicles.length; i++) {
+    vehiclesCheck[i].addEventListener("change", function () {
+      getData("https://test.agweb.cloud/ServiceJSON/GetTrack", {
+        session: `${token}`, // Токен аутентификации который возвращает метод Login
+        schemaID: `${enumSchemas}`, // ID схемы, которые возвращаются EnumSchemas
+        IDs: `${vehiclesCheck[i].id}`, //Список идентификаторов ТС (их можно получить с помощью EnumDevices – поле ID в классе RGroupItem)
+        SD: `${gmd}`, //Начало временного периода. Время с учетом UTCOffset заданном в методе «Login» в формате yyyyMMdd или yyyyMMdd-HHmm
+        ED: `${gmdhm}`, //Конец временного периода. Время с учетом UTCOffset заданном в методе «Login» в формате yyyyMMdd или yyyyMMdd-HHmm
+        // tripSplitterIndex, //integer($int32) (query) Идентификатор разбиения на рейсы (по умолчанию 0), -1 если не разбивать на рейсы
+      }).then((data) => {
+        console.log(data);
+        let deviceID = vehiclesCheck[i].id;
+        console.log(deviceID);
+        // console.log(typeof data.slice(40, -1));
+        if (data.slice(40, -1) === "[]") {
+          vehicles[i].textContent = "пока нет данных за текущие UTC сутки";
+        }
+        console.log(JSON.parse(data.slice(41, -2)));
+        const trackLatList = JSON.parse(data.slice(41, -2)).Lat;
+        const trackLngList = JSON.parse(data.slice(41, -2)).Lng;
+        console.log(trackLatList);
+        console.log(trackLngList);
+        const coordinates = [];
+        let coordinate = [trackLatList[0], trackLngList[0]];
+        coordinates.push(coordinate);
+        var objects = [];
+        var layerGroup = L.layerGroup(objects);
+        for (let index = 1; index < trackLatList.length; index++) {
+          coordinate = [trackLatList[index], trackLngList[index]];
+          coordinates.push(coordinate);
+          var circle = L.circle(coordinate, {
+            color: "red",
+            fillColor: "#f03",
+            fillOpacity: 0.5,
+            radius: 5,
+          });
+          // .addTo(map);
+          objects.push(circle);
+          var line = L.polyline([coordinates[index - 1], coordinates[index]], {
+            color: "red",
+            weight: 3,
+          });
+          // .addTo(map);
+          objects.push(line);
+        }
+        console.log(coordinates);
+        var marker = L.marker(coordinates[0])
+          // .addTo(map)
+          .bindPopup(vehicles[i].textContent)
+          .openPopup();
+        // var polygon = L.polygon(coordinates).addTo(map);
+        // console.log(vehicles[i].textContent);
+        objects.push(marker);
+        layerGroup = L.layerGroup(objects);
+        layerGroup.addTo(map);
+      });
+    });
+  }
 
   await getData("https://test.agweb.cloud/ServiceJSON/EnumGeoFences", {
     session: `${token}`, // Токен аутентификации который возвращает метод Login
@@ -160,68 +209,71 @@ const getToken = async (url = "", data = {}) => {
     document.body.append(div); // добавляем div на страницу
 
     function renderGeoFencesList(geoFencesList) {
-      let ul = document.createElement("ul");
+      let div = document.createElement("div");
+      div.classList.add("tree__geofences");
       geoFencesList.forEach((elems) => {
-        let li = document.createElement("li");
-        li.classList.add("tree__geofences_item");
-        li.textContent = `ID: ${elems.ID}`;
-        ul.append(li);
+        let inputcheck = document.createElement("input");
+        inputcheck.id = `${elems.ID}`;
+        inputcheck.type = "checkbox";
+        inputcheck.classList.add("tree__geofences_item-check");
+        div.append(inputcheck);
+        let label = document.createElement("label");
+        label.classList.add("tree__geofences_item");
+        label.textContent = `${elems.Name}`;
+        div.append(label);
+        let div2 = document.createElement("div");
+        div.append(div2);
       });
-      return ul; // возвращаем список
+      return div; // возвращаем список
     }
 
     let geofencesUl = renderGeoFencesList(geoFencesList); // получаем список
     document.getElementById("geofences").append(geofencesUl); // добавляем список на страницу в div с id=root
-    GEOFENCESTITLE.textContent = "Список геозон";
+    GEOFENCESTITLE.textContent = "Геозоны Челябинска";
 
     let geofences = document.querySelectorAll(".tree__geofences_item");
+    let geofencesCheck = document.querySelectorAll(
+      ".tree__geofences_item-check"
+    );
     for (let i = 0; i < geofences.length; i++) {
-      geofences[i].addEventListener("click", function () {
+      geofencesCheck[i].addEventListener("click", function () {
+        console.log(geofences[i].textContent);
         getData("https://test.agweb.cloud/ServiceJSON/GetGeofences", {
           session: `${token}`, // Токен аутентификации который возвращает метод Login
           schemaID: `${enumSchemas}`, // ID схемы, которые возвращаются EnumSchemas
-          IDs: `${geofences[i].textContent}`, // (query) ID геозон через запятую. Если параметр не задан, используются все геозоны схемы.
+          IDs: `${geofencesCheck[i].id}`, // (query) ID геозон через запятую. Если параметр не задан, используются все геозоны схемы.
         }).then((data) => {
-          const geofencesLatList = JSON.parse(data.slice(41, -2)).Lat;
-          const geofencesLngList = JSON.parse(data.slice(41, -2)).Lng;
-          console.log(geofencesLatList);
-          console.log(geofencesLngList);
+          // console.log(data);
+          let response = JSON.parse(data);
+          // console.log(response);
+          let geofenceId = geofencesCheck[i].id;
+          // console.log(response[geofenceId].Lat);
+          // console.log(response[geofenceId].Lng);
+          const geofencesLatList = response[geofenceId].Lat;
+          const geofencesLngList = response[geofenceId].Lng;
           const coordinates = [];
-          // if ((trackLatList.length = 0)) {
-          //   console.log("no data");
-          //   geofences[i].textContent = "нет данных за текущие UTC сутки";
-          // }
           for (let index = 0; index < geofencesLatList.length; index++) {
-            let coordinate = [geofencesLatList[index], trackLngList[index]];
+            let coordinate = [geofencesLatList[index], geofencesLngList[index]];
             coordinates.push(coordinate);
-            var circle = L.circle(coordinate, {
-              color: "red",
-              fillColor: "#f03",
-              fillOpacity: 0.5,
-              radius: 5,
-            }).addTo(map);
           }
           console.log(coordinates);
           var marker = L.marker(coordinates[0])
             .addTo(map)
             .bindPopup(geofences[i].textContent)
             .openPopup();
-          // var polygon = L.polygon(coordinates).addTo(map);
+          var polygon = L.polygon(coordinates).addTo(map);
           console.log(geofences[i].textContent);
+          var circle = L.circle(coordinates[0], {
+            color: "red",
+            fillColor: "#f03",
+            fillOpacity: 0.5,
+            radius: response[geofenceId].R,
+          }).addTo(map);
         });
       });
     }
   });
-
-  // .then(
-  //   getData("https://test.agweb.cloud/ServiceJSON/GetGeofences", {
-  //     session: `${token}`, // Токен аутентификации который возвращает метод Login
-  //     schemaID: `${enumSchemas}`, // ID схемы, которые возвращаются EnumSchemas
-  //     IDs: "008d5d49-e952-47a0-85bf-ecc9ce1e25ec", // (query) ID геозон через запятую. Если параметр не задан, используются все геозоны схемы.
-  //   })
-  // );
 };
-
 getToken("https://test.agweb.cloud/ServiceJSON/Login", {
   UserName: "", // Логин
   password: , // Пароль
@@ -310,5 +362,3 @@ async function getData(url = "", data = {}) {
 //   schemaID: "7da40625-b13e-4fd9-9ebd-4ea9619aaafd",
 //  IDs string (query) ID геозон через запятую. Если параметр не задан, используются все геозоны схемы.
 // });
-
-export default getData;

@@ -1,5 +1,6 @@
-import "./api.js";
-import getData from "./api.js";
+// справка по OSM
+
+// var marker = L.marker([55.20167281540249, 61.53177591334961]).addTo(map);
 
 // var circle = L.circle([51.508, -0.11], {
 //   color: "red",

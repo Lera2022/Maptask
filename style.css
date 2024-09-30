@@ -12,6 +12,10 @@ body {
   background-color: rgb(241, 241, 241);
 }
 
+li {
+  list-style-type: none;
+}
+
 .trees {
   display: flex;
   gap: 40px;
@@ -25,4 +29,16 @@ body {
   height: 60vh;
   border-radius: 4px;
   box-shadow: 0 0 1px #222;
+}
+
+.tree__vehiclegroup, .tree__geofencegroup {
+  padding-left: 30px;
+}
+
+.tree__vehicle, .tree__geofences {
+  padding-left: 30px;
+}
+
+.tree__vehicle_item, .tree__geofences_item {
+  padding-left: 10px;
 }/*# sourceMappingURL=style.css.map */
