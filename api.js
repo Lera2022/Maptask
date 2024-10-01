@@ -121,9 +121,11 @@ const getToken = async (url = "", data = {}) => {
         let inputcheck = document.createElement("input");
         inputcheck.id = `${elems.ID}`;
         inputcheck.type = "checkbox";
+        inputcheck.name = `${elems.Name}`;
         inputcheck.classList.add("tree__vehicle_item-check");
         div.append(inputcheck);
         let label = document.createElement("label");
+        inputcheck.id = `${elems.ID}`;
         label.classList.add("tree__vehicle_item");
         label.textContent = `${elems.Name}`;
         div.append(label);
@@ -149,6 +151,8 @@ const getToken = async (url = "", data = {}) => {
         console.log(data);
         let deviceID = vehiclesCheck[i].id;
         console.log(deviceID);
+        let deviceName = vehiclesCheck[i].name;
+        console.log(deviceName);
         // console.log(typeof data.slice(40, -1));
         if (data.slice(40, -1) === "[]") {
           vehicles[i].textContent = "пока нет данных за текущие UTC сутки";
@@ -184,13 +188,14 @@ const getToken = async (url = "", data = {}) => {
         console.log(coordinates);
         var marker = L.marker(coordinates[0])
           // .addTo(map)
-          .bindPopup(vehicles[i].textContent)
+          .bindPopup(deviceName)
           .openPopup();
         // var polygon = L.polygon(coordinates).addTo(map);
         // console.log(vehicles[i].textContent);
         objects.push(marker);
         layerGroup = L.layerGroup(objects);
         layerGroup.addTo(map);
+        marker.bindPopup(deviceName).openPopup();
       });
     });
   }
@@ -259,7 +264,7 @@ const getToken = async (url = "", data = {}) => {
           console.log(coordinates);
           var marker = L.marker(coordinates[0])
             .addTo(map)
-            .bindPopup(geofences[i].textContent)
+            .bindPopup(geofencesCheck[i].name)
             .openPopup();
           var polygon = L.polygon(coordinates).addTo(map);
           console.log(geofences[i].textContent);
@@ -275,8 +280,8 @@ const getToken = async (url = "", data = {}) => {
   });
 };
 getToken("https://test.agweb.cloud/ServiceJSON/Login", {
-  UserName: "", // Логин
-  password: , // Пароль
+  UserName: "userapi", // Логин
+  password: 123, // Пароль
   UTCOffset: UTCOffset, // Смещение от UTC в минутах
 });
 
