@@ -31,12 +31,20 @@
     box-shadow: 0 0 1px #222;
   }
 
-.tree__vehiclegroup, .tree__geofencegroup {
+.tree__geofencesgrour {
   padding-left: 30px;
 }
 
-.tree__vehicle, .tree__geofences {
+.tree__vehiclegroup, .tree__vehicle {
   padding-left: 30px;
+}
+
+.tree__geofences {
+  padding-left: 50px;
+  &group {
+    padding-left: 50px;
+  }
+
 }
 
 .tree__vehicle_item, .tree__geofences_item {

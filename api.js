@@ -200,11 +200,17 @@ const getToken = async (url = "", data = {}) => {
     });
   }
 
+  let currentGeofence = "3e9582ea-5b41-42eb-9ecd-062c674cfadd"; // ПОКА ВЫБЕРУ ТОЛЬКО ЧАСТЬ ДАННЫХ ЧТОБЫ НЕ УТОНУТЬ В НИХ
+
   await getData("https://test.agweb.cloud/ServiceJSON/EnumGeoFences", {
     session: `${token}`, // Токен аутентификации который возвращает метод Login
     schemaID: `${enumSchemas}`, // ID схемы, которые возвращаются EnumSchemas
-    parentIDs: "3e9582ea-5b41-42eb-9ecd-062c674cfadd", // string (query) ID корневого элемента иерархии
-    // ПОКА ВЫБЕРУ ТОЛЬКО ЧАСТЬ ДАННЫХ ЧТОБЫ НЕ УТОНУТЬ В НИХ
+    // parentIDs: null, // string (query) ID корневого элемента иерархии
+    // parentIDs: "a923e79c-eef5-428f-b6b1-8be6f2ea80dd", // string (query) ID корневого элемента иерархии
+    // parentIDs: "c929f308-f0f3-4867-bced-ebe518623b87", // string (query) ID корневого элемента иерархии
+    // parentIDs: "008d5d49-e952-47a0-85bf-ecc9ce1e25ec", // string (query) ID корневого элемента иерархии
+    // parentIDs: "daa6e1da-bb79-4f44-adeb-c82272079923", // string (query) ID корневого элемента иерархии
+    parentIDs: `${currentGeofence}`, // string (query) ID корневого элемента иерархии
   }).then((data) => {
     const geoFencesList = JSON.parse(data).Items;
     // console.log(geoFencesList);
@@ -231,10 +237,40 @@ const getToken = async (url = "", data = {}) => {
       });
       return div; // возвращаем список
     }
-
     let geofencesUl = renderGeoFencesList(geoFencesList); // получаем список
-    document.getElementById("geofences").append(geofencesUl); // добавляем список на страницу в div с id=root
-    GEOFENCESTITLE.textContent = "Геозоны Челябинска";
+    document.getElementById("geofences").append(geofencesUl); // добавляем список на страницу в div
+    GEOFENCESTITLE.textContent = "Геозоны";
+  });
+
+  await getData("https://test.agweb.cloud/ServiceJSON/EnumGeoFences", {
+    session: `${token}`, // Токен аутентификации который возвращает метод Login
+    schemaID: `${enumSchemas}`, // ID схемы, которые возвращаются EnumSchemas
+    // parentIDs: null, // string (query) ID корневого элемента иерархии
+    // parentIDs: "a923e79c-eef5-428f-b6b1-8be6f2ea80dd", // string (query) ID корневого элемента иерархии
+    // parentIDs: "c929f308-f0f3-4867-bced-ebe518623b87", // string (query) ID корневого элемента иерархии
+    // parentIDs: "008d5d49-e952-47a0-85bf-ecc9ce1e25ec", // string (query) ID корневого элемента иерархии
+    parentIDs: "daa6e1da-bb79-4f44-adeb-c82272079923", // string (query) ID корневого элемента иерархии
+    // parentIDs: "3e9582ea-5b41-42eb-9ecd-062c674cfadd", // string (query) ID корневого элемента иерархии
+    // ПОКА ВЫБЕРУ ТОЛЬКО ЧАСТЬ ДАННЫХ ЧТОБЫ НЕ УТОНУТЬ В НИХ
+  }).then((data) => {
+    const geoFencesLevel1 = JSON.parse(data).Groups;
+    console.log(geoFencesLevel1);
+    const geofencesGroupLevel1 = geoFencesLevel1.filter(
+      (geoFencesLevel1) => geoFencesLevel1.ID === currentGeofence
+    )[0].Name;
+    console.log(geofencesGroupLevel1);
+
+    let div = document.createElement("div");
+    div.classList.add("tree__geofencesgrour");
+    let inputcheck = document.createElement("input");
+    inputcheck.type = "checkbox";
+    inputcheck.classList.add("tree__geofences_item-check");
+    div.append(inputcheck);
+    let label = document.createElement("label");
+    label.classList.add("tree__geofences_item");
+    label.textContent = geofencesGroupLevel1;
+    div.append(label);
+    document.getElementById("geofences").prepend(div);
 
     let geofences = document.querySelectorAll(".tree__geofences_item");
     let geofencesCheck = document.querySelectorAll(
@@ -280,8 +316,8 @@ const getToken = async (url = "", data = {}) => {
   });
 };
 getToken("https://test.agweb.cloud/ServiceJSON/Login", {
-  UserName: "userapi", // Логин
-  password: 123, // Пароль
+  UserName: "", // Логин
+  password: , // Пароль
   UTCOffset: UTCOffset, // Смещение от UTC в минутах
 });
 
