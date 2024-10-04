@@ -139,6 +139,8 @@ const getToken = async (url = "", data = {}) => {
   let vehicles = document.querySelectorAll(".tree__vehicle_item");
   let vehiclesCheck = document.querySelectorAll(".tree__vehicle_item-check");
   for (let i = 0; i < vehicles.length; i++) {
+    if (condition) {
+    }
     vehiclesCheck[i].addEventListener("change", function () {
       getData("https://test.agweb.cloud/ServiceJSON/GetTrack", {
         session: `${token}`, // Токен аутентификации который возвращает метод Login
@@ -259,11 +261,14 @@ const getToken = async (url = "", data = {}) => {
       (geoFencesLevel1) => geoFencesLevel1.ID === currentGeofence
     )[0].Name;
     console.log(geofencesGroupLevel1);
+    currentGeofence = "daa6e1da-bb79-4f44-adeb-c82272079923";
 
     let div = document.createElement("div");
-    div.classList.add("tree__geofencesgrour");
+    div.classList.add("tree__geofencesgrour1");
     let inputcheck = document.createElement("input");
     inputcheck.type = "checkbox";
+    inputcheck.checked = true;
+    inputcheck.disabled = true;
     inputcheck.classList.add("tree__geofences_item-check");
     div.append(inputcheck);
     let label = document.createElement("label");
@@ -271,50 +276,151 @@ const getToken = async (url = "", data = {}) => {
     label.textContent = geofencesGroupLevel1;
     div.append(label);
     document.getElementById("geofences").prepend(div);
-
-    let geofences = document.querySelectorAll(".tree__geofences_item");
-    let geofencesCheck = document.querySelectorAll(
-      ".tree__geofences_item-check"
-    );
-    for (let i = 0; i < geofences.length; i++) {
-      geofencesCheck[i].addEventListener("click", function () {
-        console.log(geofences[i].textContent);
-        getData("https://test.agweb.cloud/ServiceJSON/GetGeofences", {
-          session: `${token}`, // Токен аутентификации который возвращает метод Login
-          schemaID: `${enumSchemas}`, // ID схемы, которые возвращаются EnumSchemas
-          IDs: `${geofencesCheck[i].id}`, // (query) ID геозон через запятую. Если параметр не задан, используются все геозоны схемы.
-        }).then((data) => {
-          // console.log(data);
-          let response = JSON.parse(data);
-          // console.log(response);
-          let geofenceId = geofencesCheck[i].id;
-          // console.log(response[geofenceId].Lat);
-          // console.log(response[geofenceId].Lng);
-          const geofencesLatList = response[geofenceId].Lat;
-          const geofencesLngList = response[geofenceId].Lng;
-          const coordinates = [];
-          for (let index = 0; index < geofencesLatList.length; index++) {
-            let coordinate = [geofencesLatList[index], geofencesLngList[index]];
-            coordinates.push(coordinate);
-          }
-          console.log(coordinates);
-          var marker = L.marker(coordinates[0])
-            .addTo(map)
-            .bindPopup(geofencesCheck[i].name)
-            .openPopup();
-          var polygon = L.polygon(coordinates).addTo(map);
-          console.log(geofences[i].textContent);
-          var circle = L.circle(coordinates[0], {
-            color: "red",
-            fillColor: "#f03",
-            fillOpacity: 0.5,
-            radius: response[geofenceId].R,
-          }).addTo(map);
-        });
-      });
-    }
   });
+
+  await getData("https://test.agweb.cloud/ServiceJSON/EnumGeoFences", {
+    session: `${token}`, // Токен аутентификации который возвращает метод Login
+    schemaID: `${enumSchemas}`, // ID схемы, которые возвращаются EnumSchemas
+    // parentIDs: null, // string (query) ID корневого элемента иерархии
+    // parentIDs: "a923e79c-eef5-428f-b6b1-8be6f2ea80dd", // string (query) ID корневого элемента иерархии
+    // parentIDs: "c929f308-f0f3-4867-bced-ebe518623b87", // string (query) ID корневого элемента иерархии
+    parentIDs: "008d5d49-e952-47a0-85bf-ecc9ce1e25ec", // string (query) ID корневого элемента иерархии
+    // parentIDs: "daa6e1da-bb79-4f44-adeb-c82272079923", // string (query) ID корневого элемента иерархии
+    // parentIDs: "3e9582ea-5b41-42eb-9ecd-062c674cfadd", // string (query) ID корневого элемента иерархии
+    // ПОКА ВЫБЕРУ ТОЛЬКО ЧАСТЬ ДАННЫХ ЧТОБЫ НЕ УТОНУТЬ В НИХ
+  }).then((data) => {
+    const geoFencesLevel2 = JSON.parse(data).Groups;
+    console.log(geoFencesLevel2);
+    const geofencesGroupLevel2 = geoFencesLevel2.filter(
+      (geoFencesLevel2) => geoFencesLevel2.ID === currentGeofence
+    )[0].Name;
+    console.log(geofencesGroupLevel2);
+    currentGeofence = "008d5d49-e952-47a0-85bf-ecc9ce1e25ec";
+
+    let div = document.createElement("div");
+    div.classList.add("tree__geofencesgrour2");
+    let inputcheck = document.createElement("input");
+    inputcheck.type = "checkbox";
+    inputcheck.checked = true;
+    inputcheck.disabled = true;
+    inputcheck.classList.add("tree__geofences_item-check");
+    div.append(inputcheck);
+    let label = document.createElement("label");
+    label.classList.add("tree__geofences_item");
+    label.textContent = geofencesGroupLevel2;
+    div.append(label);
+    document.getElementById("geofences").prepend(div);
+  });
+
+  await getData("https://test.agweb.cloud/ServiceJSON/EnumGeoFences", {
+    session: `${token}`, // Токен аутентификации который возвращает метод Login
+    schemaID: `${enumSchemas}`, // ID схемы, которые возвращаются EnumSchemas
+    // parentIDs: null, // string (query) ID корневого элемента иерархии
+    // parentIDs: "a923e79c-eef5-428f-b6b1-8be6f2ea80dd", // string (query) ID корневого элемента иерархии
+    parentIDs: "c929f308-f0f3-4867-bced-ebe518623b87", // string (query) ID корневого элемента иерархии
+    // parentIDs: "008d5d49-e952-47a0-85bf-ecc9ce1e25ec", // string (query) ID корневого элемента иерархии
+    // parentIDs: "daa6e1da-bb79-4f44-adeb-c82272079923", // string (query) ID корневого элемента иерархии
+    // parentIDs: "3e9582ea-5b41-42eb-9ecd-062c674cfadd", // string (query) ID корневого элемента иерархии
+    // ПОКА ВЫБЕРУ ТОЛЬКО ЧАСТЬ ДАННЫХ ЧТОБЫ НЕ УТОНУТЬ В НИХ
+  }).then((data) => {
+    const geoFencesLevel3 = JSON.parse(data).Groups;
+    console.log(geoFencesLevel3);
+    const geofencesGroupLevel3 = geoFencesLevel3.filter(
+      (geoFencesLevel3) => geoFencesLevel3.ID === currentGeofence
+    )[0].Name;
+    console.log(geofencesGroupLevel3);
+    currentGeofence = "c929f308-f0f3-4867-bced-ebe518623b87";
+
+    let div = document.createElement("div");
+    div.classList.add("tree__geofencesgrour3");
+    let inputcheck = document.createElement("input");
+    inputcheck.type = "checkbox";
+    inputcheck.checked = true;
+    inputcheck.disabled = true;
+    inputcheck.classList.add("tree__geofences_item-check");
+    div.append(inputcheck);
+    let label = document.createElement("label");
+    label.classList.add("tree__geofences_item");
+    label.textContent = geofencesGroupLevel3;
+    div.append(label);
+    document.getElementById("geofences").prepend(div);
+  });
+
+  await getData("https://test.agweb.cloud/ServiceJSON/EnumGeoFences", {
+    session: `${token}`, // Токен аутентификации который возвращает метод Login
+    schemaID: `${enumSchemas}`, // ID схемы, которые возвращаются EnumSchemas
+    // parentIDs: null, // string (query) ID корневого элемента иерархии
+    parentIDs: "a923e79c-eef5-428f-b6b1-8be6f2ea80dd", // string (query) ID корневого элемента иерархии
+    // parentIDs: "c929f308-f0f3-4867-bced-ebe518623b87", // string (query) ID корневого элемента иерархии
+    // parentIDs: "008d5d49-e952-47a0-85bf-ecc9ce1e25ec", // string (query) ID корневого элемента иерархии
+    // parentIDs: "daa6e1da-bb79-4f44-adeb-c82272079923", // string (query) ID корневого элемента иерархии
+    // parentIDs: "3e9582ea-5b41-42eb-9ecd-062c674cfadd", // string (query) ID корневого элемента иерархии
+    // ПОКА ВЫБЕРУ ТОЛЬКО ЧАСТЬ ДАННЫХ ЧТОБЫ НЕ УТОНУТЬ В НИХ
+  }).then((data) => {
+    const geoFencesLevel4 = JSON.parse(data).Groups;
+    console.log(geoFencesLevel4);
+    const geofencesGroupLevel4 = geoFencesLevel4.filter(
+      (geoFencesLevel4) => geoFencesLevel4.ID === currentGeofence
+    )[0].Name;
+    console.log(geofencesGroupLevel4);
+    currentGeofence = "c929f308-f0f3-4867-bced-ebe518623b87";
+
+    let div = document.createElement("div");
+    div.classList.add("tree__geofencesgrour4");
+    let inputcheck = document.createElement("input");
+    inputcheck.type = "checkbox";
+    inputcheck.checked = true;
+    inputcheck.disabled = true;
+    inputcheck.classList.add("tree__geofences_item-check");
+    div.append(inputcheck);
+    let label = document.createElement("label");
+    label.classList.add("tree__geofences_item");
+    label.textContent = geofencesGroupLevel4;
+    div.append(label);
+    document.getElementById("geofences").prepend(div);
+  });
+
+  let geofences = document.querySelectorAll(".tree__geofences_item");
+  let geofencesCheck = document.querySelectorAll(".tree__geofences_item-check");
+  for (let i = 0; i < geofences.length; i++) {
+    geofencesCheck[i].addEventListener("click", function () {
+      console.log(geofences[i].textContent);
+      getData("https://test.agweb.cloud/ServiceJSON/GetGeofences", {
+        session: `${token}`, // Токен аутентификации который возвращает метод Login
+        schemaID: `${enumSchemas}`, // ID схемы, которые возвращаются EnumSchemas
+        IDs: `${geofencesCheck[i].id}`, // (query) ID геозон через запятую. Если параметр не задан, используются все геозоны схемы.
+      }).then((data) => {
+        // console.log(data);
+        let response = JSON.parse(data);
+        // console.log(response);
+        let geofenceId = geofencesCheck[i].id;
+        // console.log(response[geofenceId].Lat);
+        // console.log(response[geofenceId].Lng);
+        const geofencesLatList = response[geofenceId].Lat;
+        const geofencesLngList = response[geofenceId].Lng;
+        const coordinates = [];
+        for (let index = 0; index < geofencesLatList.length; index++) {
+          let coordinate = [geofencesLatList[index], geofencesLngList[index]];
+          coordinates.push(coordinate);
+        }
+        console.log(coordinates);
+        var marker = L.marker(coordinates[0])
+          .addTo(map)
+          .bindPopup(geofences[i].textContent)
+          .openPopup();
+        var polygon = L.polygon(coordinates).addTo(map);
+        console.log(geofences[i].textContent);
+        var circle = L.circle(coordinates[0], {
+          color: "red",
+          fillColor: "#f03",
+          fillOpacity: 0.5,
+          radius: response[geofenceId].R,
+        }).addTo(map);
+      });
+    });
+  }
 };
+
 getToken("https://test.agweb.cloud/ServiceJSON/Login", {
   UserName: "", // Логин
   password: , // Пароль
