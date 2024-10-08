@@ -91,6 +91,8 @@ const getToken = async (url = "", data = {}) => {
         let inputcheck = document.createElement("input");
         inputcheck.id = `${devicesGroupsList[index].ID}`;
         inputcheck.type = "checkbox";
+        inputcheck.checked = true;
+        inputcheck.disabled = true;
         inputcheck.classList.add("tree__vehiclegroup_item-check");
         div.append(inputcheck);
         let label = document.createElement("label");
@@ -133,6 +135,8 @@ const getToken = async (url = "", data = {}) => {
 
   let vehicles = document.querySelectorAll(".tree__vehicle_item");
   let vehiclesCheck = document.querySelectorAll(".tree__vehicle_item-check");
+  let allLayerGroups = [];
+  let j = 0;
   for (let i = 0; i < vehicles.length; i++) {
     vehiclesCheck[i].addEventListener("change", function () {
       if (vehiclesCheck[i].checked) {
@@ -168,7 +172,6 @@ const getToken = async (url = "", data = {}) => {
           let coordinate = [trackLatList[0], trackLngList[0]];
           coordinates.push(coordinate);
           var objects = [];
-          var layerGroup = L.layerGroup(objects);
           for (let index = 1; index < trackLatList.length; index++) {
             coordinate = [trackLatList[index], trackLngList[index]];
             coordinates.push(coordinate);
@@ -198,10 +201,17 @@ const getToken = async (url = "", data = {}) => {
           // var polygon = L.polygon(coordinates).addTo(map);
           // console.log(vehicles[i].textContent);
           objects.push(marker);
-          layerGroup = L.layerGroup(objects);
+          var layerGroup = L.layerGroup(objects);
           layerGroup.addTo(map);
+          console.log(allLayerGroups);
+          var leafletId = layerGroup._leaflet_id;
+          console.log(layerGroup);
+          allLayerGroups.push({ id: i, layer: leafletId });
           marker.bindPopup(deviceName).openPopup();
         });
+      } else {
+        console.log(allLayerGroups);
+        console.log(allLayerGroups[0].layer);
       }
     });
   }
