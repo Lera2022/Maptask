@@ -436,8 +436,8 @@ const getToken = async (url = "", data = {}) => {
 };
 
 getToken("https://test.agweb.cloud/ServiceJSON/Login", {
-  UserName: "", // Логин
-  password: , // Пароль
+  UserName: "userapi", // Логин
+  password: 123, // Пароль
   UTCOffset: UTCOffset, // Смещение от UTC в минутах
 });
 
